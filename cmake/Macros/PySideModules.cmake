@@ -19,6 +19,11 @@ macro(create_pyside_module module_name module_include_dir module_libraries modul
         set(typesystem_path ${typesystem_name})
     endif()
 
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/post_process.py)
+        set(_python_postprocessor python ${CMAKE_CURRENT_SOURCE_DIR}/post_process.py ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+    else()
+        set(_python_postprocessor "")
+    endif()
     add_custom_command(OUTPUT ${${module_sources}}
                         COMMAND ${SHIBOKEN_BINARY} ${GENERATOR_EXTRA_FLAGS}
                         ${pyside_BINARY_DIR}/pyside_global.h
@@ -30,6 +35,8 @@ macro(create_pyside_module module_name module_include_dir module_libraries modul
                         --api-version=${SUPPORTED_QT_VERSION}
                         --drop-type-entries="${dropped_entries}"
                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/PySide/${module_name}
+                        COMMAND ${_python_postprocessor}
                         COMMENT "Running generator for ${module_name}...")
 
     include_directories(${module_name} ${${module_include_dir}} ${pyside_SOURCE_DIR})
