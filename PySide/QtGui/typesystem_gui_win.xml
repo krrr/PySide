@@ -19,31 +19,18 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 -->
 <typesystem package="PySide.QtGui">
-  <primitive-type name="WId" target-lang-api-name="PyObject">
+  <primitive-type name="WId" target-lang-api-name="PyLong">
     <conversion-rule>
-        <native-to-target>
-        #ifdef IS_PY3K
-        return PyCapsule_New(%in, 0, 0);
-        #else
-        return PyCObject_FromVoidPtr(%in, 0);
-        #endif
-        </native-to-target>
-        <target-to-native>
-            <add-conversion type="PyNone">
-            %out = 0;
-            </add-conversion>
-            <add-conversion check="checkPyCapsuleOrPyCObject(%in)" type="PyObject">
-            #ifdef IS_PY3K
-            %out = (%OUTTYPE)PyCapsule_GetPointer(%in, 0);
-            #else
-            %out = (%OUTTYPE)PyCObject_AsVoidPtr(%in);
-            #endif
-            </add-conversion>
-        </target-to-native>
+      <native-to-target>
+      return PyLong_FromVoidPtr(%in);
+      </native-to-target>
+      <target-to-native>
+        <add-conversion type="PyLong">
+          %out = (%OUTTYPE)PyLong_AsVoidPtr(%in);
+        </add-conversion>
+      </target-to-native>
     </conversion-rule>
   </primitive-type>
-  <inject-code class="native" position="beginning">
-    <insert-template name="checkPyCapsuleOrPyCObject_func"/>
-  </inject-code>
+
   <enum-type name="QPixmap::HBitmapFormat" />
 </typesystem>
