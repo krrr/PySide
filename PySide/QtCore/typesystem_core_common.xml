@@ -3207,8 +3207,8 @@
       <modify-argument index="2">
         <remove-argument />
         <conversion-rule class="native">
-            long *%out = new long;
-            %out = 0;
+            long a2;
+            long *%out = &amp;a2;  // this pointer will be passed into c++ side
         </conversion-rule>
       </modify-argument>
       <modify-argument index="return">
@@ -3216,16 +3216,17 @@
         <conversion-rule class="native">
             %RETURN_TYPE %out = false;
             if (PySequence_Check(%PYARG_0) &amp;&amp; (PySequence_Size(%PYARG_0) == 2)) {
-                Shiboken::AutoDecRef pyResult(PySequence_GetItem(%PYARG_0, 0));
-                %out = %CONVERTTOCPP[bool](pyResult);
+                Shiboken::AutoDecRef i0(PySequence_GetItem(%PYARG_0, 0));
+                Shiboken::AutoDecRef i1(PySequence_GetItem(%PYARG_0, 1));
+                %out = %CONVERTTOCPP[bool](i0);
+                *%2 = %CONVERTTOCPP[long](i1);  // set long*
             }
         </conversion-rule>
       </modify-argument>
       <inject-code position="end">
       %PYARG_0 = PyTuple_New(2);
       PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[%RETURN_TYPE](%0));
-      PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[long](*result_out));
-      delete result_out;
+      PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[long](*result_out));  // a2
       </inject-code>
     </modify-function>
   </object-type>

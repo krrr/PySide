@@ -4186,6 +4186,33 @@
         </modify-argument>
     </modify-function>
 
+    <modify-function signature="winEvent(MSG*, long*)">
+      <modify-argument index="2">
+        <remove-argument />
+        <conversion-rule class="native">
+            long a2;
+            long *%out = &amp;a2;  // this pointer will be passed into c++ side
+        </conversion-rule>
+      </modify-argument>
+      <modify-argument index="return">
+        <replace-type modified-type="PyObject"/>
+        <conversion-rule class="native">
+            %RETURN_TYPE %out = false;
+            if (PySequence_Check(%PYARG_0) &amp;&amp; (PySequence_Size(%PYARG_0) == 2)) {
+                Shiboken::AutoDecRef i0(PySequence_GetItem(%PYARG_0, 0));
+                Shiboken::AutoDecRef i1(PySequence_GetItem(%PYARG_0, 1));
+                %out = %CONVERTTOCPP[bool](i0);
+				*%2 = %CONVERTTOCPP[long](i1);  // set long*
+            }
+        </conversion-rule>
+      </modify-argument>
+      <inject-code position="end">
+      %PYARG_0 = PyTuple_New(2);
+      PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[%RETURN_TYPE](%0));
+      PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[long](*result_out));  // a2
+      </inject-code>
+    </modify-function>
+
     <modify-function signature="setStyle(QStyle*)">
       <inject-code class="target" position="end">
         Shiboken::Object::keepReference(reinterpret_cast&lt;SbkObject*&gt;(%PYSELF), "__style__",  %PYARG_1);

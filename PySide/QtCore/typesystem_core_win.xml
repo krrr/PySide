@@ -20,38 +20,29 @@
 -->
 <typesystem package="PySide.QtCore">
   <primitive-type name="Qt::HANDLE" target-lang-api-name="PyObject" />
-  <primitive-type name="HWND">
-      <conversion-rule>
-        <native-to-target>
-        #ifdef IS_PY3K
-        return PyCapsule_New(%in, 0, 0);
-        #else
-        return PyCObject_FromVoidPtr(%in, 0);
-        #endif
-        </native-to-target>
-        <target-to-native>
-            <add-conversion type="PyNone">
-            %out = 0;
-            </add-conversion>
-            <add-conversion check="checkPyCapsuleOrPyCObject(%in)" type="PyObject">
-            #ifdef IS_PY3K
-            %out = (%OUTTYPE)PyCapsule_GetPointer(%in, 0);
-            #else
-            %out = (%OUTTYPE)PyCObject_AsVoidPtr(%in);
-            #endif
-            </add-conversion>
-        </target-to-native>
-      </conversion-rule>
+
+  <primitive-type name="HWND" target-lang-api-name="PyLong">
+    <!-- used by MSG structure -->
+    <conversion-rule>
+      <native-to-target>
+      return PyLong_FromVoidPtr(%in);
+      </native-to-target>
+      <target-to-native>
+        <add-conversion type="PyLong">
+          %out = (%OUTTYPE)PyLong_AsVoidPtr(%in);
+        </add-conversion>
+      </target-to-native>
+    </conversion-rule>
   </primitive-type>
-  <inject-code class="native" position="beginning">
-    <insert-template name="checkPyCapsuleOrPyCObject_func"/>
-  </inject-code>
+
   <value-type name="POINT">
       <include file-name="wtypes.h" location="global"/>
   </value-type>
+
   <value-type name="MSG">
       <include file-name="wtypes.h" location="global"/>
   </value-type>
   <suppress-warning text="class 'MSG' inherits from unknown base class 'tagMSG'"/>
   <suppress-warning text="class not found for setup inheritance 'tagMSG'"/>
+
 </typesystem>
